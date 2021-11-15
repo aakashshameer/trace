@@ -23,6 +23,46 @@ bool TriangleFace::IntersectLocal(const Ray &r, Intersection &i)
    // 2. put the normal in i.normal
    // 3. put the texture coordinates in i.uv
    // and return true;
-   //
+
+    glm::dvec3 n = cross((b - a),(c-a)) / length(cross((b - a),(c-a)));
+    glm::dvec3 d = r.direction;
+    glm::dvec3 e = r.position + RAY_EPSILON;
+    double k = dot(n,a);
+
+    if ( dot(n,d) == 0) {
+        return false;
+    }
+
+    double t = (k - dot(n,e)) / dot(n,d);
+
+    glm::dvec3 q = e + t * d;
+
+    bool inside_ab = dot(cross(b-a,q-a),n) >= 0;
+    bool inside_bc = dot(cross(c-b,q-b),n) >= 0;
+    bool inside_ca = dot(cross(a-c,q-c),n) >= 0;
+
+    if ( inside_ab && inside_bc && inside_ca) {
+         i.t = t;
+
+         double deno = dot(cross(b-a,c-a),n);
+         float alpha = dot(cross(c-b,q-b),n) / deno;
+         float beta = dot(cross(a-c,q-c),n) / deno;
+         float gamma = dot(cross(b-a,q-a),n) / deno;
+
+        if (use_per_vertex_normals) {
+            glm::dvec3 norm_q = ((alpha * a_n) + (beta * b_n) + (gamma * c_n)) /
+                    length((alpha * a_n) + (beta * b_n) + (gamma * c_n));
+
+            i.normal = norm_q;
+        } else {
+            i.normal = n;
+        }
+
+        glm::dvec2 uv_q = ((alpha * a_uv) + (beta * b_uv) + (gamma * c_uv));
+        i.uv = uv_q;
+
+        return true;
+    }
+
    return false;
 }
