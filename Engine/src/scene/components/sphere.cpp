@@ -29,6 +29,8 @@ Sphere::Sphere()
 
 bool Sphere::IntersectLocal(const Ray &r, Intersection &i)
 {
+
+
     // REQUIREMENT: Sphere intersection code here.
     // Sphere is a unit sphere (radius = 0.5) centered at the origin.
     // Currently ignores all spheres and just returns false.
@@ -38,7 +40,30 @@ bool Sphere::IntersectLocal(const Ray &r, Intersection &i)
     // 2. put the normal in i.normal
     // 3. put the texture coordinates in i.uv
     // and return true;
-    return false;
+
+    glm::dvec3 d = r.direction;
+    glm::dvec3 e = r.position + RAY_EPSILON;
+
+    double rad = 0.5;
+
+    double disc = (dot(d, e) * dot(d, e) ) - (dot(d,d) * (dot(e,e) -  (rad*rad)));
+
+    if (disc < 0) {
+        return false;
+    } else if (disc == 0) {
+        // the ray touches the sphere at one point
+        double t = dot(-d,e) / dot(d,d);
+        glm::dvec3 p = e + (t * d);
+        i.t = t;
+        i.normal = p/rad;
+    } else {
+        // ray enters the sphere and exits the sphere
+        double t = dot(-d,e) - sqrt(disc)/ dot(d,d);
+        glm::dvec3 p = e + (t * d);
+        i.t = t;
+        i.normal = p/rad;
+    }
+    return true;
 }
 
 void Sphere::RegenerateMesh() {
