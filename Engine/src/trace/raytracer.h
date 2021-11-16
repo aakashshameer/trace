@@ -112,7 +112,7 @@ private:
     // Thresh is used to terminate ray tracing early if the ray contribution is too little.
     glm::vec3 TraceRay(const Ray& r, int depth, RayType ray_type, Camera* debug_camera=nullptr);
     glm::vec3 SampleCamera(double x_corner, double y_corner, double pixel_size_x, double pixel_size_y, Camera* debug_camera=nullptr);
-    glm::vec3 ComputeBlinnPhong (const Ray& r, glm::vec3 kd, glm::vec3 ks, glm::vec3 ke, float shininess, glm::vec3 N, TraceLight* tl);
+    glm::vec3 ComputeBlinnPhong (const Ray& r, double t, glm::vec3 kd, glm::vec3 ks, glm::vec3 ke, float shininess, glm::vec3 N, TraceLight* tl);
     glm::vec3 ShadowAttenuation (Ray* r);;
 };
 

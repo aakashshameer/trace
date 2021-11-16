@@ -42,7 +42,7 @@ bool Sphere::IntersectLocal(const Ray &r, Intersection &i)
     // and return true;
 
     glm::dvec3 d = r.direction;
-    glm::dvec3 e = r.position + RAY_EPSILON;
+    glm::dvec3 e = r.position + EDGE_EPSILON;
 
     double rad = 0.5;
 
@@ -52,13 +52,22 @@ bool Sphere::IntersectLocal(const Ray &r, Intersection &i)
         return false;
     } else if (disc == 0) {
         // the ray touches the sphere at one point
-        double t = dot(-d,e) / dot(d,d);
+        double t = -dot(d,e) / dot(d,d);
+        if (t < 0) {
+            return false;
+        }
         glm::dvec3 p = e + (t * d);
         i.t = t;
         i.normal = p/rad;
     } else {
         // ray enters the sphere and exits the sphere
-        double t = dot(-d,e) - sqrt(disc)/ dot(d,d);
+        double t = (-dot(d,e) - sqrt(disc))/ dot(d,d);
+        if (t < 0) {
+            t = (-dot(d,e) + sqrt(disc))/ dot(d,d);
+            if (t < 0) {
+                return false;
+            }
+        }
         glm::dvec3 p = e + (t * d);
         i.t = t;
         i.normal = p/rad;
