@@ -249,19 +249,23 @@ glm::vec3 RayTracer::TraceRay(const Ray& r, int depth, RayType ray_type, Camera*
         // Use this to when calculating geometry (entering object test, reflection, refraction, etc) or getting smooth shading (light direction test, etc)
         glm::vec3 N = i.normal;
 
-
-        return kd;
+        // return kd;
 
         // This is a great place to insert code for recursive ray tracing.
         // Compute the blinn-phong shading, and don't stop there:
         // add in contributions from reflected and refracted rays.
 
-        // To iterate over all light sources in the scene, use code like this:
-        // for (auto j = trace_scene.lights.begin(); j != trace_scene.lights.end(); j++) {
-        //   TraceLight* trace_light = *j;
-        //   Light* scene_light = trace_light->light;
-        // }
+        glm::vec3 sum = {0,0,0};
 
+        // To iterate over all light sources in the scene, use code like this:
+         for (auto j = trace_scene.lights.begin(); j != trace_scene.lights.end(); j++) {
+           TraceLight* trace_light = *j;
+           //Light* scene_light = trace_light->light;
+
+           sum += ComputeBlinnPhong(r, kd, ks, ke, shininess, N, trace_light);
+         }
+
+        return sum;
         // Make sure to test if the Reflections and Refractions checkboxes are enabled in the Render Cam UI
         // Use this condition, only calculate reflection/refraction if enabled:
         // if (settings.reflections) { ... }
@@ -273,6 +277,65 @@ glm::vec3 RayTracer::TraceRay(const Ray& r, int depth, RayType ray_type, Camera*
         // EXTRA CREDIT: Use environment mapping to determine the color instead
         glm::vec3 background_color = glm::vec3(0, 0, 0);
         return background_color;
+    }
+}
+
+glm::vec3 RayTracer::ComputeBlinnPhong (const Ray& r, glm::vec3 kd, glm::vec3 ks, glm::vec3 ke, float shininess, glm::vec3 N, TraceLight* tl) {
+
+    Light* scene_light = tl->light;
+    glm::vec3 V = r.direction;
+    glm::vec3 L;
+    float A_dist = 1;
+
+
+    if(PointLight* pl = dynamic_cast<PointLight*>(scene_light)) {
+        // point light
+        glm::dvec3 pos = tl->GetTransformPos();
+        L = normalize (pos - r.position);
+
+        if (AttenuatingLight* al = dynamic_cast<AttenuatingLight*>(scene_light)) {
+            double a = al->AttenA.Get();
+            double b = al->AttenB.Get();
+            double c = al->AttenC.Get();
+
+            double dist = a * length(pos - r.position) * length(pos - r.position) + b * length(pos - r.position) + c;
+
+            A_dist = fmin(1, 1/dist);
+        }
+
+    } else if (DirectionalLight* dl = dynamic_cast<DirectionalLight*>(scene_light)) {
+        // directional light
+
+        L = tl->GetTransformDirection();
+
+    }
+
+    float B = 1.0;
+    if (dot(N, L) < 0.00001) {B = 0.0;}
+
+    Ray* ray = new Ray(r.position, L);
+    glm::vec3 A_shad = ShadowAttenuation(ray);
+    glm::vec3 H = normalize(V + L);
+    glm::vec3 I = scene_light->GetIntensity();
+    float shiny = shininess > 0 ? shininess : 0.00001;
+    glm::vec3 ambient = kd * tl->light->Ambient.GetRGB();
+    glm::vec3 diffspec = (kd * dot(N, L)) + (ks * pow(dot(N,H),shiny));
+
+    glm::vec3 result = ke + ambient + (A_shad * A_dist * I * B * diffspec);
+    delete(ray); // deallocate ray
+    return result;
+}
+
+glm::vec3 RayTracer::ShadowAttenuation (Ray* r) {
+    Intersection i;
+
+    if (!trace_scene.Intersect(*r, i)) {
+        return {1,1,1};
+    } else {
+
+        Material* m = i.GetMaterial();
+        glm::vec3 kt = m->Transmittence->GetColorUV(i.uv);
+        return kt * ShadowAttenuation(r);
     }
 }
 
