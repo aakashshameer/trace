@@ -26,7 +26,7 @@ bool TriangleFace::IntersectLocal(const Ray &r, Intersection &i)
 
     glm::dvec3 n = cross((b - a),(c-a)) / length(cross((b - a),(c-a)));
     glm::dvec3 d = r.direction;
-    glm::dvec3 e = r.position + EDGE_EPSILON;
+    glm::dvec3 e = r.position;
     double k = dot(n,a);
 
     if ( dot(n,d) == 0) {
@@ -45,7 +45,7 @@ bool TriangleFace::IntersectLocal(const Ray &r, Intersection &i)
     bool inside_ca = dot(cross(a-c,q-c),n) >= 0;
 
     if ( inside_ab && inside_bc && inside_ca) {
-         i.t = t;
+         i.t = t + NORMAL_EPSILON;
 
          double deno = dot(cross(b-a,c-a),n);
          float alpha = dot(cross(c-b,q-b),n) / deno;

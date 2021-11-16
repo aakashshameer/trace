@@ -262,7 +262,7 @@ glm::vec3 RayTracer::TraceRay(const Ray& r, int depth, RayType ray_type, Camera*
            TraceLight* trace_light = *j;
            //Light* scene_light = trace_light->light;
 
-           sum += ComputeBlinnPhong(r, i.t, kd, ks, ke, shininess, N, trace_light);
+           sum += ComputeBlinnPhong(r, i.t, kd, ks, ke, shininess, N, trace_light, debug_camera);
          }
 
         return sum;
@@ -280,7 +280,7 @@ glm::vec3 RayTracer::TraceRay(const Ray& r, int depth, RayType ray_type, Camera*
     }
 }
 
-glm::vec3 RayTracer::ComputeBlinnPhong (const Ray& r, double t, glm::vec3 kd, glm::vec3 ks, glm::vec3 ke, float shininess, glm::vec3 N, TraceLight* tl) {
+glm::vec3 RayTracer::ComputeBlinnPhong (const Ray& r, double t, glm::vec3 kd, glm::vec3 ks, glm::vec3 ke, float shininess, glm::vec3 N, TraceLight* tl, Camera* debug_camera) {
 
     Light* scene_light = tl->light;
     glm::vec3 V = -r.direction;
@@ -319,7 +319,7 @@ glm::vec3 RayTracer::ComputeBlinnPhong (const Ray& r, double t, glm::vec3 kd, gl
     if (dot(N, L) < 0.00001) {B = 0.0;}
 
     Ray* ray = new Ray(r.at(t), L);
-    glm::vec3 A_shad = ShadowAttenuation(ray);
+    glm::vec3 A_shad = ShadowAttenuation(ray, debug_camera);
     //glm::vec3 A_shad = {1, 1, 1};
     glm::vec3 H = normalize(V + L);
     float shiny = shininess > 0 ? shininess : 0.00001;
@@ -331,7 +331,7 @@ glm::vec3 RayTracer::ComputeBlinnPhong (const Ray& r, double t, glm::vec3 kd, gl
     return result;
 }
 
-glm::vec3 RayTracer::ShadowAttenuation (Ray* r) {
+glm::vec3 RayTracer::ShadowAttenuation (Ray* r, Camera* debug_camera) {
     Intersection i;
 
 //    if (!trace_scene.Intersect(*r, i)) {
@@ -343,8 +343,16 @@ glm::vec3 RayTracer::ShadowAttenuation (Ray* r) {
 //        Ray ray(r->at(i.t) + RAY_EPSILON, r->direction);
 //        return kt * ShadowAttenuation(&ray);
 //    }
+    if (trace_scene.Intersect(*r, i)) {
+        r->position = r->at(i.t);
+    }
+
     glm::vec3 A_shad = {1, 1, 1};
+    // TODO: Check if reached point light
     while (trace_scene.Intersect(*r, i)) {
+        if (debug_camera) {
+            debug_camera->AddDebugRay(r->position, r->at(i.t), RayType::shadow);
+        }
         Material* m = i.GetMaterial();
         glm::vec3 kt = m->Transmittence->GetColorUV(i.uv);
         A_shad *= kt;
