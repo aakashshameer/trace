@@ -343,9 +343,9 @@ glm::vec3 RayTracer::ShadowAttenuation (Ray* r, Camera* debug_camera) {
 //        Ray ray(r->at(i.t) + RAY_EPSILON, r->direction);
 //        return kt * ShadowAttenuation(&ray);
 //    }
-    if (trace_scene.Intersect(*r, i)) {
-        r->position = r->at(i.t);
-    }
+//    if (trace_scene.Intersect(*r, i)) {
+//        r->position = r->at(i.t);
+//    }
 
     glm::vec3 A_shad = {1, 1, 1};
     // TODO: Check if reached point light

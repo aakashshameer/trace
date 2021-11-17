@@ -34,7 +34,7 @@ bool TriangleFace::IntersectLocal(const Ray &r, Intersection &i)
     }
 
     double t = (k - dot(n,e)) / dot(n,d);
-    if (t < 0) {
+    if (t <= RAY_EPSILON) {
         return false;
     }
 
@@ -45,7 +45,7 @@ bool TriangleFace::IntersectLocal(const Ray &r, Intersection &i)
     bool inside_ca = dot(cross(a-c,q-c),n) >= 0;
 
     if ( inside_ab && inside_bc && inside_ca) {
-         i.t = t + NORMAL_EPSILON;
+         i.t = t;
 
          double deno = dot(cross(b-a,c-a),n);
          float alpha = dot(cross(c-b,q-b),n) / deno;
