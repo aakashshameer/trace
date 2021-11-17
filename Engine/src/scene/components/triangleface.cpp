@@ -34,7 +34,7 @@ bool TriangleFace::IntersectLocal(const Ray &r, Intersection &i)
     }
 
     double t = (k - dot(n,e)) / dot(n,d);
-    if (t <= RAY_EPSILON) {
+    if (t < RAY_EPSILON) {
         return false;
     }
 

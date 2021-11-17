@@ -167,12 +167,18 @@ void RayTracer::ComputePixel(int i, int j, Camera* debug_camera) {
 
     // Trace the ray!
     glm::vec3 color(0,0,0);
+    int n = sqrt(settings.constant_samples_per_pixel);
 
     switch (settings.samplecount_mode) {
         case Camera::TRACESAMPLING_CONSTANT:
             // REQUIREMENT: Implement Anti-aliasing
             //              use setting.constant_samples_per_pixel to get the amount of samples of a pixel for anti-alasing
-            color = SampleCamera(x_corner, y_corner, settings.pixel_size_x, settings.pixel_size_y, debug_camera);
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    color += SampleCamera(x_corner + i*settings.pixel_size_x/n, y_corner + j*settings.pixel_size_y/n, settings.pixel_size_x/n, settings.pixel_size_y/n, debug_camera);
+                }
+            }
+            color = color/(1.0f*n*n);
             break;
         default:
             break;
@@ -262,15 +268,43 @@ glm::vec3 RayTracer::TraceRay(const Ray& r, int depth, RayType ray_type, Camera*
            TraceLight* trace_light = *j;
            //Light* scene_light = trace_light->light;
 
-           sum += ComputeBlinnPhong(r, i.t, kd, ks, ke, shininess, N, trace_light, debug_camera);
+           sum += ComputeBlinnPhong(r, i.t, kd, ks, ke, kt, shininess, N, trace_light, debug_camera);
          }
-
-        return sum;
+         //std::cout << sum.x << sum.y << sum.z << std::endl;
+         if (depth == settings.max_depth) {
+             return sum;
+         }
         // Make sure to test if the Reflections and Refractions checkboxes are enabled in the Render Cam UI
         // Use this condition, only calculate reflection/refraction if enabled:
-        // if (settings.reflections) { ... }
-        // if (settings.refraction) { ... }
-
+         glm::vec3 zero = {0, 0, 0};
+         glm::vec3 V = -r.direction;
+         if (settings.reflections && ks != zero) {
+             glm::vec3 norm = dot(N, -V) > 0 ? -N : N;
+             glm::vec3 dir = 2.0f*dot(V, norm)*norm - V;
+             Ray ray(r.at(i.t), dir);
+             sum += ks * TraceRay(ray, depth + 1, RayType::reflection, debug_camera);
+         }
+         if (settings.refractions && kt != zero) {
+             float eta;
+             float cos_inc;
+             glm::vec3 norm;
+             if (dot(N, -V) <= 0) {
+                 eta = INDEX_OF_AIR/index_of_refraction;
+                 norm = N;
+             } else {
+                 eta = index_of_refraction/INDEX_OF_AIR;
+                 norm = -N;
+             }
+             cos_inc = dot(norm, V);
+             float disc = 1.0 - eta*eta*(1.0 - cos_inc*cos_inc);
+             if (disc >= 0) {
+                 float cos_trans = sqrt(disc);
+                 glm::vec3 dir = (eta*cos_inc - cos_trans)*norm - eta*V;
+                 Ray ray(r.at(i.t), dir);
+                 sum += kt * TraceRay(ray, depth + 1, RayType::refraction, debug_camera);
+             }
+         }
+         return sum;
     } else {
         // No intersection. This ray travels to infinity, so we color it according to the background color,
         // which in this (simple) case is just black.
@@ -280,14 +314,14 @@ glm::vec3 RayTracer::TraceRay(const Ray& r, int depth, RayType ray_type, Camera*
     }
 }
 
-glm::vec3 RayTracer::ComputeBlinnPhong (const Ray& r, double t, glm::vec3 kd, glm::vec3 ks, glm::vec3 ke, float shininess, glm::vec3 N, TraceLight* tl, Camera* debug_camera) {
+glm::vec3 RayTracer::ComputeBlinnPhong (const Ray& r, double t, glm::vec3 kd, glm::vec3 ks, glm::vec3 ke, glm::vec3 kt, float shininess, glm::vec3 N, TraceLight* tl, Camera* debug_camera) {
 
     Light* scene_light = tl->light;
     glm::vec3 V = -r.direction;
     glm::vec3 L;
     glm::vec3 I;
     glm::vec3 ambient;
-    float A_dist = 1;
+    float A_dist = 1.0;
 
 
     if(PointLight* pl = dynamic_cast<PointLight*>(scene_light)) {
@@ -302,7 +336,7 @@ glm::vec3 RayTracer::ComputeBlinnPhong (const Ray& r, double t, glm::vec3 kd, gl
 
             double dist = a * length(pos - r.at(t)) * length(pos - r.at(t)) + b * length(pos - r.at(t)) + c;
 
-            A_dist = fmin(1, 1/dist);
+            A_dist = fmin(1.0, 1.0/dist);
         }
         I = pl->GetIntensity();
         ambient = kd * pl->Ambient.GetRGB();
@@ -314,26 +348,28 @@ glm::vec3 RayTracer::ComputeBlinnPhong (const Ray& r, double t, glm::vec3 kd, gl
         I = dl->GetIntensity();
         ambient = kd * dl->Ambient.GetRGB();
     }
+    glm::vec3 norm = dot(N, -V) > 0 ? -N : N;
 
     float B = 1.0;
-    if (dot(N, L) < 0.00001) {B = 0.0;}
+    if (dot(norm, L) < 0.00001) {B = 0.0;}
 
     Ray* ray = new Ray(r.at(t), L);
-    glm::vec3 A_shad = ShadowAttenuation(ray, debug_camera);
+    glm::vec3 A_shad = ShadowAttenuation(ray, tl, debug_camera);
     //glm::vec3 A_shad = {1, 1, 1};
     glm::vec3 H = normalize(V + L);
     float shiny = shininess > 0 ? shininess : 0.00001;
-    glm::vec3 diffuse = kd * dot(N, L);
-    glm::vec3 specular = ks * pow(dot(N,H),shiny);
+    glm::vec3 diffuse = kd * fmax(dot(norm, L), 0.0f);
+    glm::vec3 specular = ks * pow(fmax(dot(norm,H), 0.0f),shiny);
+    ambient = dot(norm, -V) > 0 ? kt * ambient : ambient;
 
     glm::vec3 result = ambient + (A_shad * A_dist * I * B * (diffuse + specular));
     delete(ray); // deallocate ray
     return result;
 }
 
-glm::vec3 RayTracer::ShadowAttenuation (Ray* r, Camera* debug_camera) {
+glm::vec3 RayTracer::ShadowAttenuation (Ray* r, TraceLight* tl, Camera* debug_camera) {
     Intersection i;
-
+    Light* scene_light = tl->light;
 //    if (!trace_scene.Intersect(*r, i)) {
 //        return {1,1,1};
 //    } else {
@@ -346,10 +382,27 @@ glm::vec3 RayTracer::ShadowAttenuation (Ray* r, Camera* debug_camera) {
 //    if (trace_scene.Intersect(*r, i)) {
 //        r->position = r->at(i.t);
 //    }
+    if (!trace_scene.Intersect(*r, i)) {
+        if (PointLight* pl = dynamic_cast<PointLight*>(scene_light)) {
+            glm::dvec3 pos = tl->GetTransformPos();
+            if (debug_camera) {
+                debug_camera->AddDebugRay(r->position, pos, RayType::shadow);
+            }
+        } else {
+            if (debug_camera) {
+                debug_camera->AddDebugRay(r->position, r->at(1000), RayType::shadow);
+            }
+        }
+    }
 
     glm::vec3 A_shad = {1, 1, 1};
-    // TODO: Check if reached point light
     while (trace_scene.Intersect(*r, i)) {
+        if (PointLight* pl = dynamic_cast<PointLight*>(scene_light)) {
+            glm::dvec3 pos = tl->GetTransformPos();
+            if (length(r->at(i.t) - r->position) > length(pos - r->position)) {
+                break;
+            }
+        }
         if (debug_camera) {
             debug_camera->AddDebugRay(r->position, r->at(i.t), RayType::shadow);
         }

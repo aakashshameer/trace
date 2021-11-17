@@ -53,7 +53,7 @@ bool Sphere::IntersectLocal(const Ray &r, Intersection &i)
     } else if (disc == 0) {
         // the ray touches the sphere at one point
         double t = -2.0*dot(d,e) / (2.0*dot(d,d));
-        if (t <= RAY_EPSILON) {
+        if (t < RAY_EPSILON) {
             return false;
         }
         glm::dvec3 p = r.at(t);
@@ -62,9 +62,9 @@ bool Sphere::IntersectLocal(const Ray &r, Intersection &i)
     } else {
         // ray enters the sphere and exits the sphere
         double t = (-2.0*dot(d,e) - sqrt(disc))/ (2.0*dot(d,d));
-        if (t <= RAY_EPSILON) {
+        if (t < RAY_EPSILON) {
             t = (-2.0*dot(d,e) + sqrt(disc))/ (2.0*dot(d,d));
-            if (t <= RAY_EPSILON) {
+            if (t < RAY_EPSILON) {
                 return false;
             }
         }
