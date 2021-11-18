@@ -42,6 +42,8 @@ RayTracer::RayTracer(Scene& scene, SceneObject& camobj) :
     settings.translucent_shadows = cam->TraceShadows.Get() == Camera::TRACESHADOWS_COLORED;
     settings.reflections = cam->TraceEnableReflection.Get();
     settings.refractions = cam->TraceEnableRefraction.Get();
+    settings.env_mapping = cam->TraceEnableEnvMapping.Get();
+    settings.env_map = cam->TraceEnvMap.Get();
     settings.fresnel = cam->TraceFresnel.Get();
     settings.beers = cam->TraceBeers.Get();
 
@@ -310,6 +312,57 @@ glm::vec3 RayTracer::TraceRay(const Ray& r, int depth, RayType ray_type, Camera*
         // which in this (simple) case is just black.
         // EXTRA CREDIT: Use environment mapping to determine the color instead
         glm::vec3 background_color = glm::vec3(0, 0, 0);
+        if (!settings.env_mapping) {
+            return background_color;
+        }
+
+        enum CubeSide{
+            FRONT = 0,
+            BACK = 1,
+            TOP = 2,
+            BOTTOM = 3,
+            RIGHT = 4,
+            LEFT = 5
+        };
+        double max_comp = fmax(abs(r.direction.x), abs(r.direction.y));
+        max_comp = fmax(max_comp, abs(r.direction.z));
+        glm::dvec2 uv;
+        CubeSide s;
+        if (max_comp == abs(r.direction.x)) {
+            if (r.direction.x < 0) {
+                s = CubeSide::LEFT;
+                uv = {r.direction.z, -r.direction.y};
+            } else {
+                s = CubeSide::RIGHT;
+                uv = {-r.direction.z, -r.direction.y};
+            }
+        } else if (max_comp == abs(r.direction.y)) {
+            if (r.direction.y < 0) {
+                s = CubeSide::BOTTOM;
+                uv = {r.direction.x, -r.direction.z};
+            } else {
+                s = CubeSide::TOP;
+                uv = {r.direction.x, r.direction.z};
+            }
+        } else {
+            if (r.direction.z < 0) {
+                s = CubeSide::BACK;
+                uv = {-r.direction.x, -r.direction.y};
+            } else {
+                s = CubeSide::FRONT;
+                uv = {r.direction.x, -r.direction.y};
+            }
+        }
+        uv = (uv + 1.0)/2.0;
+        const unsigned char* face = settings.env_map->GetFace(s);
+        unsigned int res = settings.env_map->GetResolution();
+        unsigned int u = (uv.x*res);
+        unsigned int v = (uv.y*res);
+        unsigned int idx = v*res*4 + u*4;
+        background_color.x = face[idx]/255.0f;
+        background_color.y = face[idx+1]/255.0f;
+        background_color.z = face[idx+2]/255.0f;
+
         return background_color;
     }
 }

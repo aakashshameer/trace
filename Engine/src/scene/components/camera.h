@@ -69,6 +69,8 @@ public:
     ChoiceProperty TraceShadows;
     BooleanProperty TraceEnableReflection;
     BooleanProperty TraceEnableRefraction;
+    BooleanProperty TraceEnableEnvMapping;
+    ResourceProperty<Cubemap> TraceEnvMap;
     BooleanProperty TraceFresnel;
     BooleanProperty TraceBeers;
 

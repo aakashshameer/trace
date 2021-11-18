@@ -1,0 +1,369 @@
+Name: enviroment_mapping
+Animation Length: 20
+Animation FPS: 30
+Textures:
+    Alpha Test Texture:
+        Bilinear: true
+        Path: assets/alpha_test.png
+    Checkers Texture:
+        Bilinear: true
+        Path: assets/checkers.png
+Cubemaps:
+    Yokohama3:
+        Path: ../../Trace/Editor/assets/Yokohama3.up.jpg
+    bridge:
+        Path: ../../Trace/Editor/assets/bridge.ft.jpg
+Meshes:
+    {}
+Materials:
+    Alpha Test Material:
+        Shader: Alpha Test Shader
+        Uniforms:
+            DiffuseMap:
+                Color:
+                    A:  1
+                    B:  0.5
+                    G:  0.5
+                    R:  0.5
+                Color Map: Alpha Test Texture
+                Use Texture: true
+    Blinn-Phong Material:
+        Shader: Blinn-Phong Shader
+        Uniforms:
+            Diffuse:
+                Color:
+                    A:  1
+                    B:  0
+                    G:  0
+                    R:  0.75
+                Color Map: ""
+                Use Texture: false
+            Emissive:
+                Color:
+                    A:  1
+                    B:  0
+                    G:  0
+                    R:  0
+                Color Map: ""
+                Use Texture: false
+            IndexOfRefraction: 1
+            Shininess: 20
+            Specular:
+                Color:
+                    A:  1
+                    B:  0.5
+                    G:  0.5
+                    R:  0.5
+                Color Map: ""
+                Use Texture: false
+            Transmittence:
+                Color:
+                    A:  1
+                    B:  0
+                    G:  0
+                    R:  0
+                Color Map: ""
+                Use Texture: false
+    Blinn-Phong Spotlight Material:
+        Shader: Blinn-Phong Spotlight Shader
+        Uniforms:
+            Diffuse:
+                Color:
+                    A:  1
+                    B:  0
+                    G:  0
+                    R:  0.75
+                Color Map: ""
+                Use Texture: false
+            Emissive:
+                Color:
+                    A:  1
+                    B:  0
+                    G:  0
+                    R:  0
+                Color Map: ""
+                Use Texture: false
+            IndexOfRefraction: 1
+            Shininess: 20
+            Specular:
+                Color:
+                    A:  1
+                    B:  0.5
+                    G:  0.5
+                    R:  0.5
+                Color Map: ""
+                Use Texture: false
+            Transmittence:
+                Color:
+                    A:  1
+                    B:  0
+                    G:  0
+                    R:  0
+                Color Map: ""
+                Use Texture: false
+    Depth Map Material:
+        Shader: Depth Shader
+        Uniforms:
+            {}
+    Emissive:
+        Shader: Emissive Shader
+        Uniforms:
+            AmbientColor:
+                A:  1
+                B:  1
+                G:  1
+                R:  1
+            Color:
+                A:  1
+                B:  1
+                G:  1
+                R:  1
+            ConstantAttenuation: 1
+            LinearAttenuation: 0
+            QuadraticAttenuation: 0
+    Sphere:
+        Shader: Blinn-Phong Shader
+        Uniforms:
+            Diffuse:
+                Color:
+                    A:  1
+                    B:  0
+                    G:  0
+                    R:  0
+                Color Map: ""
+                Use Texture: false
+            Emissive:
+                Color:
+                    A:  1
+                    B:  0
+                    G:  0
+                    R:  0
+                Color Map: ""
+                Use Texture: false
+            IndexOfRefraction: 1.7
+            Shininess: 256
+            Specular:
+                Color:
+                    A:  1
+                    B:  1
+                    G:  1
+                    R:  1
+                Color Map: ""
+                Use Texture: false
+            Transmittence:
+                Color:
+                    A:  1
+                    B:  0.39216
+                    G:  0.39216
+                    R:  0.39216
+                Color Map: ""
+                Use Texture: false
+    Textured Material:
+        Shader: Textured Shader
+        Uniforms:
+            DiffuseMap:
+                Color:
+                    A:  1
+                    B:  0.5
+                    G:  0.5
+                    R:  0.5
+                Color Map: Checkers Texture
+                Use Texture: true
+    Toon Material:
+        Shader: Toon Shader
+        Uniforms:
+            Diffuse:
+                Color:
+                    A:  1
+                    B:  0
+                    G:  0
+                    R:  0.75
+                Color Map: ""
+                Use Texture: false
+            Emissive:
+                Color:
+                    A:  1
+                    B:  0
+                    G:  0
+                    R:  0
+                Color Map: ""
+                Use Texture: false
+            IndexOfRefraction: 1
+            Shininess: 20
+            Specular:
+                Color:
+                    A:  1
+                    B:  0.5
+                    G:  0.5
+                    R:  0.5
+                Color Map: ""
+                Use Texture: false
+            Transmittence:
+                Color:
+                    A:  1
+                    B:  0
+                    G:  0
+                    R:  0
+                Color Map: ""
+                Use Texture: false
+ShaderPrograms:
+    Alpha Test Shader:
+        Fragment: ""
+        Geometry: ""
+        Trace Compatible: false
+        Vertex: assets/texture.vert
+    Blinn-Phong Shader:
+        Fragment: ""
+        Geometry: ""
+        Trace Compatible: true
+        Vertex: ""
+    Blinn-Phong Spotlight Shader:
+        Fragment: ""
+        Geometry: ""
+        Trace Compatible: true
+        Vertex: ""
+    Depth Shader:
+        Fragment: ""
+        Geometry: ""
+        Trace Compatible: false
+        Vertex: assets/internal/position.vert
+    Emissive Shader:
+        Fragment: assets/emissive.frag
+        Geometry: ""
+        Trace Compatible: false
+        Vertex: ""
+    Textured Shader:
+        Fragment: assets/texture.frag
+        Geometry: ""
+        Trace Compatible: false
+        Vertex: assets/texture.vert
+    Toon Shader:
+        Fragment: ""
+        Geometry: ""
+        Trace Compatible: true
+        Vertex: ""
+Root:
+    Name: Root
+    Enabled: true
+    Components:
+        Transform:
+            Rotation:
+                X:  0
+                Y:  0
+                Z:  0
+            Scale:
+                X:  1
+                Y:  1
+                Z:  1
+            Translation:
+                X:  0
+                Y:  0
+                Z:  0
+    Children:
+        -   Name: Render Camera
+            Enabled: true
+            Components:
+                Camera:
+                    FOV: 50
+                    Far Plane: 100
+                    Near Plane: 0.1
+                    Orthographic View Width: 5
+                    Perspective Camera?: true
+                    Render Height (px): 720
+                    Render Width (px): 1280
+                    Trace:
+                        Beer's Law: false
+                        Enable BVH Acceleration: true
+                        Enviroment Map: bridge
+                        Fresnel Term: false
+                        Maximum Recursion Depth: 5
+                        Reflections: true
+                        Refractions: true
+                        Sample Settings:
+                            Aperture Size: 0
+                            Caustics: true
+                            Difference Threshold: 0.02
+                            Diffuse Reflection: true
+                            Focus Distance: 1
+                            Maximum Samples: 2
+                            Minimum Samples: 0
+                            Monte Carlo: 0
+                            Random Single Branching: true
+                            Sample Count Type: 0
+                            Samples Per Pixel: 0
+                            Std. Error Threshold: 0.02
+                        Shadows: 2
+                        Use Enviroment Map: false
+                    Trace Debugger:
+                        Show Diffuse Reflection Rays: true
+                        Show Reflection Rays: true
+                        Show Refraction Rays: true
+                        Show Shadow Rays: true
+                        Show Surface Normals: true
+                Transform:
+                    Rotation:
+                        X:  -12.897
+                        Y:  0.046891
+                        Z:  0.2018
+                    Scale:
+                        X:  1
+                        Y:  1
+                        Z:  1
+                    Translation:
+                        X:  0.0008918
+                        Y:  0.89458
+                        Z:  3.1
+            Children:
+                []
+        -   Name: Sphere
+            Enabled: true
+            Components:
+                Sphere:
+                    Material: Sphere
+                    Quality: 4
+                Transform:
+                    Rotation:
+                        X:  0
+                        Y:  0
+                        Z:  0
+                    Scale:
+                        X:  1
+                        Y:  1
+                        Z:  1
+                    Translation:
+                        X:  0
+                        Y:  0
+                        Z:  0
+            Children:
+                []
+        -   Name: Key Light
+            Enabled: true
+            Components:
+                DirectionalLight:
+                    Ambient:
+                        A:  1
+                        B:  0
+                        G:  0
+                        R:  0
+                    Angular Size (Trace): 0
+                    Color:
+                        A:  1
+                        B:  1
+                        G:  1
+                        R:  1
+                    Intensity Multiplier: 1
+                Transform:
+                    Rotation:
+                        X:  32.991
+                        Y:  1.4103
+                        Z:  -0.15611
+                    Scale:
+                        X:  1
+                        Y:  1
+                        Z:  1
+                    Translation:
+                        X:  0.0081249
+                        Y:  1.96
+                        Z:  0.20239
+            Children:
+                []

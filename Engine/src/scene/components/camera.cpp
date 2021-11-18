@@ -11,6 +11,7 @@
 #include <scene/sceneobject.h>
 
 #include <trace/raytracer.h>
+#include <resource/assetmanager.h>
 
 REGISTER_COMPONENT(Camera, Camera)
 
@@ -43,6 +44,8 @@ Camera::Camera(double fov, int render_width, int render_height, double near_plan
     TraceShadows({"No Shadows", "Opaque Shadows Only", "Translucent Shadows"}, 2),
     TraceEnableReflection(true),
     TraceEnableRefraction(true),
+    TraceEnableEnvMapping(false),
+    TraceEnvMap(AssetType::Cubemap, &Singleton<AssetManager>::Instance()->GetDefaultCubemap()),
 
     TraceDebugger()
 {
@@ -80,6 +83,9 @@ Camera::Camera(double fov, int render_width, int render_height, double near_plan
         TraceSettings.AddProperty("Sample Settings", &TraceSampleSettings);
         TraceSettings.AddProperty("Fresnel Term", &TraceFresnel);
         TraceSettings.AddProperty("Beer's Law", &TraceBeers);
+        TraceSettings.AddProperty("Use Enviroment Map", &TraceEnableEnvMapping);
+        TraceSettings.AddProperty("Enviroment Map", &TraceEnvMap);
+
 
         //TraceSettings.AddProperty("Flares Only", &TraceFlaresOnly);
 

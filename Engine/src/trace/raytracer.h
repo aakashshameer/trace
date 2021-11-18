@@ -59,6 +59,8 @@ class RayTracer {
         bool translucent_shadows;
         bool reflections;
         bool refractions;
+        bool env_mapping;
+        Cubemap* env_map;
         bool fresnel;
         bool beers;
 
