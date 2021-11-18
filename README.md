@@ -16,17 +16,17 @@ Which additional shader(s) did you create?
 
 Which bells and whistles did you attempt to do, which did you complete?
 
-**We didn't complete any bells and whistles.**
+**We attempted and completed the Environmental Mapping bells and whistles.**
 
 Was there anything out of the ordinary that we should know about?
 
-**Nope**
+**You can try using our Environmental Mapping implementation by going to Render Camera under the "Use Environment Map" box and import any CubeMap of your choice. We also created a particular scene to demonstrate how our Environmental Mapping works. You can find it at Editor/assets/trace/more/enviroment_mapping.yaml.**
 
 ## Feedback
 
 About how long did you and your partners (if any) spend on this project?
 
-**20 hours**
+**25 hours**
 
 What was the hardest part about this project?
 
